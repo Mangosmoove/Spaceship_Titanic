@@ -1,0 +1,647 @@
+---
+title: "Titanic"
+author: "Arinah Karim"
+date: "4/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+read in and look at training data
+```{r}
+train <- read.csv("train.csv", header=TRUE)
+#train
+pID <- train$PassengerId
+hPlan <- train$HomePlanet
+cSleep <- train$CryoSleep
+cabNum <- train$Cabin
+destPlan <- train$Destination
+age <- train$Age
+vip <- train$VIP
+rServ <- train$RoomService
+food <- train$FoodCourt
+mall <- train$ShoppingMall
+spa <- train$Spa
+vr <- train$VRDeck
+trans <- train$Transported
+```
+
+test data
+```{r}
+test <- read.csv("test.csv")
+#head(test)
+```
+
+Finding missing values and determine how many objects are in training dataset
+```{r}
+colSums(is.na(train))
+cat(nrow(train))
+
+#checking values that showed 0 N/A for blank cells
+sum(pID=="") #0
+sum(hPlan=="") #201
+sum(cSleep=="") #217
+sum(cabNum=="") #199
+sum(destPlan=="") #182
+sum(vip=="") #203 
+sum(trans=="") #0
+
+#checking all other values just in case
+#no blank cells
+#sum(age=="") 
+#sum(rServ=="") 
+#sum(food=="") 
+#sum(mall=="") 
+#sum(spa=="") 
+#sum(vr=="") 
+```
+
+HOME PLANET
+```{r}
+sum(hPlan=="Earth") #4602 (53%)
+sum(hPlan=="Europa") #2131 (25%)
+sum(hPlan=="Mars") #1759 (20%)
+```
+```{r}
+missingHp <- which(hPlan=="")
+for (r in missingHp){
+  rand <- sample(1:100, 1, replace=TRUE)
+  if(rand >= 47){
+    train$HomePlanet[r] <- "Earth"
+  }
+  else if(rand >= 22){
+    train$HomePlanet[r] <- "Europa"
+  }
+  else{
+    train$HomePlanet[r] <- "Mars"
+  }
+}
+
+tH <- which(test$HomePlanet=="")
+for (r in tH){
+    rand <- sample(1:100, 1, replace=TRUE)
+  if(rand >= 47){
+    test$HomePlanet[r] <- "Earth"
+  }
+  else if(rand >= 22){
+    test$HomePlanet[r] <- "Europa"
+  }
+  else{
+    test$HomePlanet[r] <- "Mars"
+  }
+}
+#hPlan
+```
+
+CRYOSLEEP
+```{r}
+sum(cSleep=="False") #5439 (64%)
+sum(cSleep=="True") #3037 (36%)
+```
+```{r}
+missingCS <- which(cSleep=="")
+for (r in missingCS){
+  rand <- sample(1:100, 1, replace=TRUE)
+  if(rand >36){
+    train$CryoSleep[r] <- "False"
+  }
+  else{
+    train$CryoSleep[r] <- "True"
+  }
+}
+missingCS <- which(test$CryoSleep=="")
+for (r in missingCS){
+  rand <- sample(1:100, 1, replace=TRUE)
+  if(rand >36){
+    test$CryoSleep[r] <- "False"
+  }
+  else{
+    test$CryoSleep[r] <- "True"
+  }
+}
+```
+
+DESTINATION PLANET
+```{r}
+sum(destPlan=="55 Cancri e") #1800 (21%)
+sum(destPlan=="TRAPPIST-1e") #5915 (68%)
+sum(destPlan=="PSO J318.5-22") #796 (10%)
+```
+```{r}
+missingDp <- which(destPlan=="")
+for (r in missingDp){
+  rand <- sample(1:100, 1, replace=TRUE)
+  if(rand >= 32){
+    train$Destination[r] <- "TRAPPIST-1e"
+  }
+  else if(rand >= 11){
+    train$Destination[r] <- "55 Cancri e"
+  }
+  else{
+    train$Destination[r] <- "PSO J318.5-22"
+  }
+}
+
+missingDp <- which(test$Destination=="")
+for (r in missingDp){
+  rand <- sample(1:100, 1, replace=TRUE)
+  if(rand >= 32){
+    test$Destination[r] <- "TRAPPIST-1e"
+  }
+  else if(rand >= 11){
+    test$Destination[r] <- "55 Cancri e"
+  }
+  else{
+    test$Destination[r] <- "PSO J318.5-22"
+  }
+}
+```
+
+VIP
+```{r}
+sum(vip=="False") #8291 (95%)
+sum(vip=="True") #(2%)
+```
+```{r}
+missingVIP <- which(vip=="")
+for (r in missingVIP){
+  rand <- sample(1:100, 1, replace=TRUE)
+  if(rand >= 2){
+    train$VIP[r] <- "False"
+  }
+  else{
+    train$VIP[r] <- "True"
+  }
+}
+
+mvp <- which(test$VIP=="")
+for (r in mvp){
+  rand <- sample(1:100, 1, replace=TRUE)
+  if(rand >= 2){
+    test$VIP[r] <- "False"
+  }
+  else{
+    test$VIP[r] <- "True"
+  }
+}
+```
+
+AGE
+```{r}
+#hist(age)
+median(age, na.rm = TRUE)
+```
+```{r}
+missingAge <- which(is.na(age), arr.ind=TRUE)
+for (r in missingAge){
+  train$Age[r] = 27
+}
+
+
+tMA <- which(is.na(test$Age), arr.ind = TRUE)
+for (r in tMA){
+  test$Age = 27
+}
+```
+
+Cabin num
+```{r}
+#cabNum <- train$Cabin
+#mCN <- which(cabNum=="")
+#mCN[2]
+#cabNum[93]
+#substr(pID[93], 1,4) #for first 4 digits for group num (0099)
+#substr(cabNum[93], 0, 1)
+#irisSubset <- train[grep(substr(cabNum[92], 0, 1), pID), ]
+#head(irisSubset)
+#library(stringr)
+#library(dplyr)
+#tempCab <- cabNum
+#df <- train %>%
+ # filter(str_detect(pID,substr(pID[16], 1,4)))
+#df$Cabin
+
+#length(which(tempCab==""))
+#length(df$Cabin)
+#rand <- sample(range, 1, replace=TRUE)
+#rand
+#tempCab[94] <- df$Cabin[rand]
+#tempCab[94]
+#pID[93] #also a string
+#last two digits in pID
+#strtoi(substr(pID[93], 6,7))
+#pID[94]
+#pID[95] 
+#length(mCN)
+#what I need to do
+
+#iterate through all of the "" cabin numbers
+#determine the passenger id of the person
+#extract the first four numbers of the passenger id
+#find matching passenger ids to substr and store those
+###if there are no matches (data structure is empty) --> assign value of cabin number above
+#check if those passengers have cabin numbers
+####if there is a match with at least one --> store the same cabin info on missing cn
+####if there are no matches, guess we'll have a print statement that says yuh huh
+
+```
+
+```{r}
+#reducing "" rate by finding people with buddies (199-135)
+library(stringr)
+library(dplyr)
+mCN <- which(cabNum=="")
+for (missing in mCN){
+  id <- train$PassengerId[missing]
+  travel_Buds <- substr(id, 1,4)
+  df <- train %>%
+    filter(str_detect(train$PassengerId, travel_Buds))
+  cabins <- df$Cabin
+  range <- length(cabins)
+  rand <- sample(range, 1, replace=TRUE)
+  train$Cabin[missing] <- cabins[rand]
+}
+
+tmCN <- which(test$Cabin=="")
+for (missing in mCN){
+  id <- test$PassengerId[missing]
+  travel_Buds <- substr(id, 1,4)
+  df <- test %>%
+    filter(str_detect(test$PassengerId, travel_Buds))
+  cabins <- df$Cabin
+  range <- length(cabins)
+  if(range > 0){
+    rand <- sample(range, 1, replace=TRUE)
+    test$Cabin[missing] <- cabins[rand]
+  }
+ 
+}
+#length(which(cabNum==""))
+```
+```{r}
+#filling in rest by looking at previous cabin num
+stillMissing <- which(cabNum=="")
+for (m in stillMissing){
+  train$Cabin[m] <- train$Cabin[m-1]
+}
+
+stillMissing <- which(test$Cabin=="")
+for (m in stillMissing){
+  test$Cabin[m] <- test$Cabin[m-1]
+}
+#which(cabNum=="")
+```
+
+AMENITIES: 
+```{r}
+train$RoomService[is.na(train$RoomService)]<-0
+train$FoodCourt[is.na(train$FoodCourt)]<-0
+train$ShoppingMall[is.na(train$ShoppingMall)]<-0
+train$Spa[is.na(train$Spa)]<-0
+train$VRDeck[is.na(train$VRDeck)]<-0
+
+test$RoomService[is.na(test$RoomService)]<-0
+test$FoodCourt[is.na(test$FoodCourt)]<-0
+test$ShoppingMall[is.na(test$ShoppingMall)]<-0
+test$Spa[is.na(test$Spa)]<-0
+test$VRDeck[is.na(test$VRDeck)]<-0
+```
+
+
+Data Visualizations
+```{r}
+#seeing how many people were transported
+library(ggplot2)
+ggplot(train)+geom_bar(aes(trans, fill=trans))
+```
+```{r}
+#home planet
+ggplot(train)+geom_bar(aes(hPlan,fill=trans),position="dodge2")
+```
+```{r}
+#destination planet
+ggplot(train,  xlab="Destination")+geom_bar(aes(destPlan,fill=trans),position="dodge2")
+```
+```{r}
+#creating new column for holding home and destination planet data
+library(stringr) #for concatenating: https://www.marsja.se/how-to-concatenate-two-columns-or-more-in-r-stringr-tidyr/
+train$HDplan <- str_c(train$HomePlanet, " ",train$Destination)
+test$HDplan <-str_c(test$HomePlane, " ", test$Destination)
+```
+```{r}
+#https://www.datanovia.com/en/blog/ggplot-axis-ticks-set-and-rotate-text-labels/
+ggplot(train)+geom_bar(aes(train$HDplan,fill=trans),position="dodge2") + theme(axis.text.x = element_text(angle = 90))
+```
+```{r}
+#sum(train$HDplan=="Europa PSO J318.5-22")
+#sum(train$HDplan=="Earth TRAPPIST-1e")
+```
+```{r}
+#cryosleep
+ggplot(train)+geom_bar(aes(cSleep,fill=trans),position="dodge2")
+```
+```{r}
+#the dreaded cabin info
+library(stringr)
+#decks
+train$cabinDeck <- substr(train$Cabin,0,1)
+test$cabinDeck <- substr(test$Cabin,0,1)
+```
+```{r}
+ggplot(train)+geom_bar(aes(train$cabinDeck,fill=trans),position="dodge2")
+```
+```{r}
+#number
+library(stringr)
+train$cabinN <- substr(train$Cabin,3,3)
+test$cabinN <- substr(test$Cabin,3,3)
+#head(train$cabinN)
+```
+```{r}
+ggplot(train)+geom_bar(aes(train$cabinN,fill=trans),position="dodge2")
+```
+```{r}
+#side
+#https://statisticsglobe.com/r-extract-first-or-last-n-characters-from-string
+train$cabSide <- substr(train$Cabin, nchar(train$Cabin)- 1 + 1, nchar(train$Cabin))
+test$cabSide <- substr(test$Cabin,nchar(test$Cabin)-1+1,nchar(test$Cabin))
+#unique(train$cabSide)
+```
+```{r}
+ggplot(train)+geom_bar(aes(train$cabSide,fill=trans),position="dodge2")
+```
+```{r}
+#amenities
+#ggplot(train)+geom_bar(aes(mall,fill=trans),position="dodge2")
+#ggplot(train)+geom_bar(aes(vr,fill=trans),position="dodge2")
+#ggplot(train)+geom_bar(aes(spa,fill=trans),position="dodge2")
+```
+```{r}
+#age
+ggplot(train)+geom_bar(aes(age,fill=trans),position="dodge2")
+#https://r-graph-gallery.com/21-distribution-plot-using-ggplot2.html
+ggplot(train)+geom_bar(aes(age,fill=trans),position="dodge2",stat="density",alpha=0.8)
+```
+```{r}
+#https://r-coder.com/cut-r/
+train$AgeStage <- cut(train$Age, breaks=c(-Inf,12,19,60,Inf), labels=c("Pre-teen", "Young Adult", "Adult", "Senior"))
+test$AgeStage <- cut(test$Age, breaks=c(0,12,19,60,Inf), labels=c("Pre-teen", "Young Adult", "Adult", "Senior"))
+```
+
+
+```{r}
+ggplot(train)+geom_bar(aes(AgeStage,fill=trans),position="dodge2")
+```
+```{r}
+#vip
+ggplot(train)+geom_bar(aes(vip,fill=trans),position="dodge2")
+```
+```{r}
+#amenities
+train$rS_bin <- cut(train$RoomService, breaks=c(-Inf, 0, Inf), labels=c("No", "Yes"))
+test$rS_bin <- cut(test$RoomService, breaks=c(-Inf, 0, Inf), labels=c("No", "Yes"))
+
+train$mall_bin <- cut(train$ShoppingMall, breaks=c(-Inf, 0, Inf), labels=c("No", "Yes"))
+test$mall_bin <- cut(test$ShoppingMall, breaks=c(-Inf, 0, Inf), labels=c("No", "Yes"))
+
+train$food_bin <- cut(train$FoodCourt, breaks=c(-Inf, 0, Inf), labels=c("No", "Yes"))
+test$food_bin <- cut(test$FoodCourt, breaks=c(-Inf, 0, Inf), labels=c("No", "Yes"))
+
+train$spa_bin <- cut(train$Spa, breaks=c(-Inf, 0, Inf), labels=c("No", "Yes"))
+test$spa_bin <- cut(test$Spa, breaks=c(-Inf, 0, Inf), labels=c("No", "Yes"))
+
+train$vr_bin <- cut(train$VRDeck, breaks=c(-Inf, 0, Inf), labels=c("No", "Yes"))
+test$vr_bin <- cut(test$VRDeck, breaks=c(-Inf, 0, Inf), labels=c("No", "Yes"))
+```
+```{r}
+ggplot(train)+geom_bar(aes(rS_bin,fill=trans),position="dodge2")
+ggplot(train)+geom_bar(aes(mall_bin,fill=trans),position="dodge2")
+ggplot(train)+geom_bar(aes(food_bin,fill=trans),position="dodge2")
+ggplot(train)+geom_bar(aes(spa_bin,fill=trans),position="dodge2")
+ggplot(train)+geom_bar(aes(vr_bin,fill=trans),position="dodge2")
+```
+```{r}
+colnames(train)
+```
+```{r}
+#https://www.listendata.com/2015/06/r-keep-drop-columns-from-data-frame.html
+train <- train[-c(1)]
+test <- test[-c(1)]
+colnames(train)
+```
+
+
+```{r}
+train$AgeStage<-as.factor(train$AgeStage)
+test$AgeStage<-as.factor(test$AgeStage)
+```
+
+```{r}
+train$rS_bin<-as.factor(train$rS_bin)
+test$rS_bin<-as.factor(test$rS_bin)
+train$mall_bin<-as.factor(train$mall_bin)
+test$mall_bin<-as.factor(test$mall_bin)
+train$food_bin<-as.factor(train$food_bin)
+test$food_bin<-as.factor(test$food_bin)
+train$spa_bin<-as.factor(train$spa_bin)
+test$spa_bin<-as.factor(test$spa_bin)
+train$vr_bin<-as.factor(train$vr_bin)
+test$vr_bin<-as.factor(test$vr_bin)
+```
+```{r}
+train$CryoSleep<-as.factor(train$CryoSleep)
+#str(train)
+```
+```{r}
+test$CryoSleep<-as.factor(test$CryoSleep)
+test$VIP<-as.factor(test$VIP)
+```
+```{r}
+train$Transported<-as.factor(train$Transported)
+
+```
+```{r}
+train$HomePlanet<-as.factor(train$HomePlanet)
+train$Destination<-as.factor(train$Destination)
+train$VIP <- as.factor(train$VIP)
+#str(train)
+```
+```{r}
+train$cabinN <- as.factor(train$cabinN)
+test$cabinN<-as.factor(test$cabinN)
+train$cabinDeck<- as.factor(train$cabinDeck)
+test$cabinDeck<-as.factor(test$cabinDeck)
+train$cabSide <- as.factor(train$cabSide)
+test$cabSide<-as.factor(test$cabSide)
+```
+```{r}
+test$HomePlanet<-as.factor(test$HomePlanet)
+test$Destination<-as.factor(test$Destination)
+train$HDplan<-as.factor(train$HDplan)
+test$HDplan<-as.factor(test$HDplan)
+```
+
+```{r}
+#length(train$HomePlanet)
+#length(train$CryoSleep)
+#length(train$Destination)
+#length(train$Age)
+#length(train$VIP)
+#length(train$Transported)
+#length(train$HDplan)
+#length(train$cabinDeck)
+#length(train$cabinN)
+#length(train$cabSide)
+#length(train$AgeStage)
+#length(train$rS_bin)
+#length(train$mall_bin)
+#length(train$food_bin)
+#length(train$spa_bin)
+#length(train$vr_bin)
+str(train)
+str(test)
+```
+
+```{r}
+#Experimentation
+#Random Forest model 1
+#https://www.youtube.com/watch?v=1iAf8AOw7wA
+#install.packages('randomForest')
+library(randomForest)
+set.seed(1234)
+model <- "Transported ~ HomePlanet+CryoSleep+HDplan+cabinN+Age+RoomService+FoodCourt+ShoppingMall+Spa+VRDeck+cabSide+cabinDeck"
+mod.form <- as.formula(model)
+rfMod <- randomForest(formula=mod.form, data = train, ntree =  500, mtry = 4, nodesize = .01 * nrow(train))
+rfMod
+#importance(rfMod)
+Transported <- predict(rfMod, newdata = test)
+```
+```{r}
+#just looking at proportions of confusion matrix
+mat = matrix(c(3398,917,810,3658), nrow=2)
+prop.table(mat,1)
+```
+```{r}
+colnames(train)
+```
+```{r}
+#Random Forest model 2
+library(randomForest)
+set.seed(1234)
+model2 <- "Transported ~ CryoSleep+HDplan+cabinN+AgeStage+rS_bin+food_bin+mall_bin+spa_bin+vr_bin+cabSide+cabinDeck"
+mod.form2 <- as.formula(model2)
+rfMod2 <- randomForest(formula=mod.form2, data = train, ntree =  500, mtry = 4, nodesize = .01 * nrow(train))
+rfMod2
+Transported2 <- predict(rfMod2, newdata = test)
+```
+```{r}
+#trying to find a better model but can't
+library(randomForest)
+set.seed(1234)
+transported_equation3 <- "Transported ~ HDplan+CryoSleep+cabSide+cabinDeck+vr_bin+mall_bin+cabinN"
+transported_formula3 <- as.formula(transported_equation3)
+titanic_space_model3 <- randomForest(formula=transported_formula3, data = train, ntree =  500, mtry = 4, nodesize = .01 * nrow(train))
+titanic_space_model3
+#plot(titanic_space_model3,main="Error Rate",log="y")
+#Transported <- predict(titanic_space_model3, newdata = test)
+```
+```{r}
+colnames(train)
+```
+```{r}
+#cleaning for logistic regression
+train<-train[-c(1,3,4,5,7:12)]
+```
+```{r}
+colnames(test)
+```
+```{r}
+#matching training data except for obviously transported variable
+test<-test[-c(1,3,4,5,7:12)]
+colnames(test)
+```
+```{r}
+#https://www.youtube.com/watch?v=C4N3_XJJ-jU
+logistic <- glm(train$Transported ~., data=train, family="binomial", maxit = 100)
+summary(logistic)
+```
+```{r}
+predicted <- data.frame(prob_trans=logistic$fitted.values, trans=train$Transported)
+predicted <- predicted[order(predicted$prob_trans, decreasing=FALSE),]
+predicted$rank <- 1:nrow(predicted)
+```
+```{r}
+library(ggplot2)
+library(cowplot)
+ggplot(data=predicted,aes(x=rank, y = prob_trans)) + geom_point(aes(color=trans), alpha=1, shape=4, stroke=2) + xlab("Index") + ylab("Predicted probability of getting transported")
+```
+```{r}
+#R^2 
+ll.null <- logistic$null.deviance/-2
+ll.proposed<- logistic$deviance/-2
+(ll.null - ll.proposed)/ll.null 
+```
+```{r}
+#p-val
+1-pchisq(2*(ll.proposed-ll.null),df=length(logistic$coefficients)-1)
+```
+```{r}
+#cleaning environment
+rm(age)
+rm(cabins)
+rm(cabNum)
+rm(destPlan)
+rm(cSleep)
+rm(food)
+rm(hPlan)
+rm(id)
+rm(m)
+rm(mall)
+rm(mCN)
+rm(missing)
+rm(missingAge)
+rm(missingCS)
+rm(missingDp)
+rm(missingHp)
+rm(missingVIP)
+rm(mvp)
+rm(pID)
+rm(r)
+rm(rand)
+rm(range)
+rm(rServ)
+rm(spa)
+rm(stillMissing)
+rm(tH)
+rm(tMA)
+rm(tmCN)
+rm(travel_Buds)
+rm(vip)
+rm(vr)
+```
+```{r}
+p<-predict(logistic, newdata=train,type="response")
+p.trans<-round(p)
+#head(p.trans,20)
+p.trans[p.trans==0]<-"False"
+p.trans[p.trans==1]<-"True"
+#head(p.trans,10)
+p.trans<-as.factor(p.trans)
+#levels(p.trans)
+#which(unique(p,trans)<0) #checking probabilities are between 0 and 1
+```
+```{r}
+logTrans <- predict(logistic, newdata=test,type="response")
+```
+```{r}
+Transported[logTrans==0]<-"False"
+Transported[logTrans==1]<-"True"
+Transported<-as.factor(logTrans)
+```
+```{r}
+#accuracy of model
+library(caret)
+confusionMatrix(train$Transported,p.trans)
+```
